@@ -9,13 +9,12 @@ The =ntfy.el= file can be downloaded and loaded via =load-file= and other instal
 
 Recommended: the package can be installed and configured using =straight.el= using:
 #+begin_src emacs-lisp
-  (use-package ntfy
-    :straight t
-    :type git :host nil :repo "https://git.sr.ht/~shom/ntfy"
-    :custom (setq ntfy-server "https://ntfy.sh"
-                  ntfy-topic "mytopic"
-                  ntfy-header "Notification from emacs"
-                  ntfy-tags "purple_circle,loudspeaker")
+(use-package ntfy
+  :straight (ntfy :type git :host nil :repo "https://git.sr.ht/~shom/ntfy")
+  :config (setq ntfy-server "https://ntfy.sh"
+		ntfy-topic "mytopic"
+		ntfy-header "Notification from emacs"
+		ntfy-tags "purple_circle,loudspeaker"))
 #+end_src
 
 ** Configuration
