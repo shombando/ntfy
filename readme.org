@@ -1,0 +1,38 @@
+#+title: ntfy.el - Send notifications from Emacs using ntfy.sh
+
+* Overview
+This is a small package to provide an interface to use the https://ntfy.sh service (or self-hosted version) to send notification from Emacs. The initial use case is to send quick notifications from emacs to a mobile device (ntfy only support Android currently) as reminders. The ~ntfy-send-message~ can also be utilized to send notifications from other functions.
+
+* Installation and configuration
+** Installation
+The =ntfy.el= file can be downloaded and loaded via =load-file= and other installation means.
+
+Recommended: the package can be installed and configured using =straight.el= using:
+#+begin_src emacs-lisp
+  (use-package ntfy
+    :straight t
+    :type git :host nil :repo "https://git.sr.ht/~shom/ntfy"
+    :custom (setq ntfy-server "https://ntfy.sh"
+                  ntfy-topic "mytopic"
+                  ntfy-header "Notification from emacs"
+                  ntfy-tags "purple_circle,loudspeaker")
+#+end_src
+
+** Configuration
+The following custom variables must be configured:
+- =nfty-server=: The URL of the server (including the =https://= part), ntfy.sh generously offers a free hosted version so it can be set to =https://ntfy.sh=, be please be mindful of how we use this free resource and review the [[https://ntfy.sh/docs/privacy/][privacy policy]] of the service.
+- =nfty-topic=: The topic or channel where the notification should be published. If using the public ntfy.sh service, ensure that is not an easily guessable topic.
+- =ntfy-header=: This is the title of the notification, the message is sent as the body of the notification.
+- =ntfy-tags=: The emoji(s) that'll appear before the header message. Use comma separated (no spaces) string, see https://ntfy.sh/docs/publish/#tags-emojis for details.
+
+* Usage
+Once the package is loaded and configured a notification can be sent by invoking the command =ntfy-send-message= interactively or programmatically =ntfy-send-message(STRING)=.
+
+* Improvements
+This is the first Emacs package I've put together, contributions, suggestions for best practices, and  constructive criticism is very much welcome and appreciated.
+
+Here are some of
+- Improve documentation and testing. There isn't an ounce of error or dependency checking. This has only been tested on =Emacs 28.0.91= using =curl 7.68.0=.
+- Provide more functionality:
+  - Interactively and programmatically set the tag per message as an optional parameter.
+  - Provide minor mode to capture all Emacs notifications and post them to pre-defined topics.
