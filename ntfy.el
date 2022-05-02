@@ -45,6 +45,21 @@
   (setq ntfy--message message)
   (ntfy--publish-message))
 
+(defun ntfy-send-message-with-header (header message)
+  "Send ad-hoc MESSAGE from mini-buffer with custom HEADER as notification."
+  (interactive "sEnter header: \nsEnter message: ")
+  (setq ntfy-header header)
+  (setq ntfy--message message)
+  (ntfy--publish-message))
+
+(defun ntfy-send-message-with-header-and-tags (tags header message)
+  "Send ad-hoc MESSAGE from mini-buffer with custom HEADER and TAGS as notification."
+  (interactive "sEnter tags (emoji codes, comma separated no spaces): \nsEnter header: \nsEnter message: ")
+  (setq ntfy-tags tags)
+  (setq ntfy-header header)
+  (setq ntfy--message message)
+  (ntfy--publish-message))
+
 (defun ntfy--publish-message ()
 "Publish message to server with curl."
 (start-process "nfty.el" nil "curl"
