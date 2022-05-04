@@ -25,13 +25,30 @@ The following custom variables must be configured:
 - =ntfy-tags=: The emoji(s) that'll appear before the header message. Use comma separated (no spaces) string, see https://ntfy.sh/docs/publish/#tags-emojis for details.
 
 * Usage
-Once the package is loaded and configured a notification can be sent by invoking the command =ntfy-send-message= interactively or programmatically =ntfy-send-message(STRING)=.
+Once the package is loaded and configured a notification can be sent by invoking the following commands interactively or programmatically:
+
+|----------------------------------------+--------------------------------------------------------------|
+| Interactive                            | Programmatic                                                 |
+|----------------------------------------+--------------------------------------------------------------|
+| =ntfy-send-message=                      | ~(ntfy-send-message MESSAGE)~                                  |
+| =ntfy-send-message-with-header=          | ~(ntfy-send-message-with-header HEADER MESSAGE)~               |
+| =ntfy-send-message-with-header-and-tags= | ~(ntfy-send-message-with-header-and-tags TAGS HEADER MESSAGE)~ |
+| =ntfy-send-url=                          | ~(ntfy-send-url URL)~                                          |
+|----------------------------------------+--------------------------------------------------------------|
 
 * Improvements
 This is the first Emacs package I've put together, contributions, suggestions for best practices, and  constructive criticism is very much welcome and appreciated.
 
-Here are some of
-- Improve documentation and testing. There isn't an ounce of error or dependency checking. This has only been tested on =Emacs 28.0.91= using =curl 7.68.0=.
+Here are some of the potential improvements:
+- Improve documentation and testing.
+  - [X] This has been tested on =Emacs 27.2= & =28.0.92= using =curl= on Pop!_OS (20.04 and 22.04) and Termux.
+  - [X] All functions are documented and there are no Flycheck errors or warnings. 
+  - [ ] Test on other OSes.
 - Provide more functionality:
-  - Interactively and programmatically set the tag per message as an optional parameter.
-  - Provide minor mode to capture all Emacs notifications and post them to pre-defined topics.
+  - [X] Interactively and programmatically set the tag per message as an optional parameter.
+  - [X] Send URL as a clickable item from the Android notification shade.
+  - [ ] Send a file attachment.
+  - [ ] Send Android intents.
+  - Stretch:
+    - [ ] Provide templates for Header and Tags as a pop-up selection list.
+    - [ ] Provide minor mode to capture all Emacs notifications and post them to pre-defined topics.
