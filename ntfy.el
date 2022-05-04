@@ -5,8 +5,9 @@
 ;; Author: Shom Bandopadhaya <shom@bandopadhaya.com>
 ;; Created: 2022-04-30
 ;; Modified: 2022-04-30
-;; Version: 0.1
+;; Version: 0.1.1
 ;; Keywords: ntfy notification push-notification pub-sub
+;; Package-Requires: ((emacs "27.2") (curl))
 ;; SPDX-License-Identifier: MIT
 
 ;; This file is not part of GNU Emacs.
@@ -39,6 +40,9 @@
 (defvar ntfy--message nil
   "Message string that will be published.")
 
+(defvar ntfy--link nil
+  "URL that will be published.")
+
 (defun ntfy-send-message (message)
   "Send ad-hoc MESSAGE from mini-buffer as notification."
   (interactive "sEnter message:")
@@ -68,6 +72,20 @@
 		 "-d" (format "%s" ntfy--message)
 		 (format "%s/%s" ntfy-server ntfy-topic)))
 
+(defun ntfy-send-url (url)
+  "Send URL from mini-buffer."
+  (interactive "sEnter URL: \n")
+  (setq ntfy--link url)
+  (ntfy--publish-url))
+
+(defun ntfy--publish-url ()
+"Publish url to server with curl."
+(start-process "nfty.el" nil "curl"
+		 "-H" (format "Title: %s" "Emacs shared a URL")
+		 "-H" (format "Tags: %s" "link")
+		 "-H" (format "Actions: view, %s, %s" ntfy--link ntfy--link)
+		 "-d" (format "%s" ntfy--link)
+		 (format "%s/%s" ntfy-server ntfy-topic)))
 
 (provide 'ntfy)
 ;;; ntfy.el ends here
