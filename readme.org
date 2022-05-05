@@ -47,6 +47,7 @@ Here are some of the potential improvements:
 - Provide more functionality:
   - [X] Interactively and programmatically set the tag per message as an optional parameter.
   - [X] Send URL as a clickable item from the Android notification shade.
+    - [ ] Special characters break this function. Might need to switch to JSON, can't url-encode curl header.
   - [ ] Send a file attachment.
   - [ ] Send Android intents.
   - Stretch:
