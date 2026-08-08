@@ -1,0 +1,161 @@
+* Setup and Basic Configuration
+#+begin_src emacs-lisp
+  (use-package ntfy
+    ;;; Examples of different package managers shown:
+    ;;; Emacs >= 30, VC;
+    ;; :vc ??
+    ;;; Elpaca;
+    ;; :ensure ( :host github
+    ;;           :repo "shombando/ntfy"
+    ;;           :files (defaults "*.el"))
+    ;;; Straight;
+    ;; :straight (?)
+    :config
+    ;; Use setq instead of setopt if emacs < 30.
+    (setopt ntfy-server "http://ntfy.domain.com"
+  		  ntfy-topic "emacs"
+  		  ntfy-title "Notification from emacs"
+  		  ntfy-tags '("purple_circle" "loudspeaker")
+            ntfy-priority 3))
+  ;; Test with: (ntfy-send-message "This is a test!")
+#+end_src
+
+* Example Uses of Ntfy
+** General use
+Simple message
+#+begin_src emacs-lisp
+  (ntfy-message "This is a test!")
+#+end_src
+
+Message and title
+#+begin_src emacs-lisp
+  (ntfy-message-with-title "This is the title" "This is the message")
+#+end_src
+
+Message, title and tags
+#+begin_src emacs-lisp
+  (ntfy-message-with-title "This is the title"
+                           "This is the message"
+                           ;; v tags v
+                           "key,banana")
+#+end_src
+
+** In your programs!
+You can use ntfy to set up notification alerts, such as when a timer elapses
+or once a lengthy compilation has completed!
+#+begin_src emacs-lisp
+  (defun point-beginning-of-last-line ()
+    "Get the position of the beginning of the last line"
+    (goto-char (point-max))
+    (if (bolp)
+        (backward-char 1))
+    (beginning-of-line)
+    (point))
+
+
+  (defun ntfy-compilation-finished (buf str)
+    ""
+    (with-current-buffer buf
+      (let ((first-line (buffer-substring (pos-bol 2)
+                                          (pos-eol 2)))
+            (last-line (buffer-substring (point-beginning-of-last-line)
+                                         (point-max))))
+        ;; This uses the interactive function but you can use the plist version
+        ;; too!
+        (ntfy-message-with-title-and-tags
+         "gear"
+         (format "Compilation %s" (replace-regexp-in-string "\n" "" str))
+         (format "%s\n%s" first-line last-line))
+        ;; Plist Version
+        ;; (ntfy--generate-valid-plist ( :title (format "Compilation %s" (replace-regexp-in-string "\n" "" str))
+        ;;                               :tags "gear"
+        ;;                               :message (format "%s\n%s" first-line last-line))))
+        )))
+
+
+  ;; Run this function when
+  (add-to-list 'compilation-finish-functions 'ntfy-compilation-finished)
+#+end_src
+
+* Testing
+#+begin_src emacs-lisp
+  (ntfy-message "this is my message")
+
+  (ntfy--generate-valid-plist '(:message "this is a message"))
+
+
+  ;; (let* ((options '(:message "message"))
+  ;;        (new-plist '( :message (plist-get options :message)
+  ;;                      :title (plist-get options :title))))
+  ;;   (message (plist-get new-plist :message))
+  ;;   (message (plist-get new-plist :title))
+  ;;
+  ;;   )
+
+  ;; { "topic": "mytopic",
+  ;; "message": "Disk space is low at 5.1 GB",
+  ;; "title": "Low disk space alert",
+  ;; "tags": ["warning","cd"],
+  ;; "priority": 4,
+  ;; "attach": "https://filesrv.lan/space.jpg",
+  ;; "filename": "diskspace.jpg",
+  ;; "click": "https://homecamera.lan/xasds1h2xsSsa/",
+  ;; "actions": [{ "action": "view", "label": "Admin panel", "url": "https://filesrv.lan/admin" }]
+  ;; }'
+  (ntfy--generate-valid-plist "hello")
+
+
+  (let ((some-message "this is ’some message’"))
+    (ntfy--generate-valid-plist '(:message some-message)))
+
+  (ntfy--generate-valid-plist '( :title "AHHH!"
+                                 :message "This is some message"
+                                 :priority 5
+                                 :delay "5m"))
+
+
+  ;; New testing;
+  (defun ntfy--send-message (message &optional title tags priority filename attachment click actions delay icon)
+    "docstring
+  X-Message 	  Main body of the message as shown in the notification
+  X-Title 	  Message title
+  X-Priority 	  Message priority
+  X-Tags        Tags and emojis
+  X-Delay 	  Timestamp or duration for delayed delivery
+  X-Actions 	  JSON array or short format of user actions
+  X-Click 	  URL to open when notification is clicked
+  X-Attach 	  URL to send as an attachment or
+  X-Filename 	  Optional attachment filename, as it appears in the client
+  X-Markdown 	  Enable Markdown formatting in the notification body
+  X-Icon 	      URL to use as notification icon
+  "
+    (let ((url-request-method "POST")
+          (url-request-extra-headers `(("Filename" . ,filename)
+                                       ("Message" . "Test Message")))
+          (url-request-data ))
+      (url-retrieve (concat ntfy-server "/emacs") (lambda (status)
+                                                    (switch-to-buffer (current-buffer))))))
+
+
+  (defun test-filename (filename)
+    ""
+    (when filename (cons "filename" filename)))
+
+  (let ((filename "cat.jpg")
+        (other-filename nil))
+    (list (test-filename filename)
+          (test-filename other-filename)))
+
+
+  (defun ntfy--publish-message (message &optional server topic title tags attachment)
+    ""
+    (let ((url-request-method "POST")
+          (url-request-extra-headers (list (ntfy--title title)
+                                           (ntfy--message message)
+                                           (ntfy--tags tags)))
+          (url-request-data (ntfy--sort-data attachment)))
+      (url-retrieve-synchronously (concat (or server ntfy-server) "/" topic))))
+
+
+  ;; TODO:
+#+end_src
