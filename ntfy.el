@@ -51,7 +51,7 @@
   :group 'ntfy
   :type 'string)
 
-(defcustom ntfy-title "Emacs Nofitication"
+(defcustom ntfy-title "Emacs Notification"
   "Set the default title of the message for the notification."
   :group 'ntfy
   :type 'string)
