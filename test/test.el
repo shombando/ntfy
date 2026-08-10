@@ -27,12 +27,22 @@
 
 (load (expand-file-name "../ntfy.el"))
 
-(setopt  ntfy-topic "macbook"
-         ntfy-header "Notification from emacs"
-         ntfy-priority 3
-         ntfy-tags '("purple_circle" "loudspeaker"))
+(setopt ntfy-server "http://ntfy.domain.localhost"
+        ntfy-topic "macbook"
+        ntfy-header "From Emacs"
+        ntfy-priority 3
+        ntfy-tags '("purple_circle" "loudspeaker"))
 
 (ntfy-message "test")
 
+
+
+;; Test Emoji Selector
+;;
+;; Removes the caching to create a clean slate for testing
+(progn
+  (setq ntfy--emoji-json-cache nil
+        ntfy--emoji-hashmap-cache nil)
+  (ntfy--interactive-emoji-selector))
 
 ;;; test.el ends here
