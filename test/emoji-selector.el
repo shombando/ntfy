@@ -6,7 +6,7 @@
   "URL the ntfy emoji JSON list.")
 
 (defvar ntfy--emoji-hashmap-cache nil
-  "")
+  "Cache of hashmap for emoji aliases and Unicode character.")
 
 (defun ntfy--get-emoji-json (&optional force-refresh)
   "Return the parsed ntfy emoji JSON structure, a vector of plists.
@@ -24,10 +24,8 @@ Pass FORCE-REFRESH as t to bypass the cache."
           (kill-buffer url-buf))))
   ntfy--emoji-json-cache)
 
-
-
 (defun ntfy--create-emoji-hashmap ()
-  ""
+  "Create and cache a hashmap mapping emoji characters to its first alias."
   (setq ntfy--emoji-hashmap-cache (make-hash-table :test #'equal))
   (mapcar (lambda (elt)
             (puthash (plist-get elt :emoji)
