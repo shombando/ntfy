@@ -51,7 +51,7 @@
   :group 'ntfy
   :type 'string)
 
-(defcustom ntfy-title "Emacs Nofitication"
+(defcustom ntfy-title "Emacs Notification"
   "Set the default title of the message for the notification."
   :group 'ntfy
   :type 'string)
@@ -71,6 +71,15 @@ https://ntfy.sh/docs/publish/#tags-emojis for details."
                  (const :tag "default" 3)
                  (const :tag "low" 2)
                  (const :tag "min" 1)))
+
+(defvar ntfy--emoji-json-cache nil
+  "Cache for the ntfy emoji JSON object.")
+
+(defvar ntfy--emoji-json-url "https://raw.githubusercontent.com/binwiederhier/ntfy/refs/heads/main/scripts/emoji.json"
+  "URL the ntfy emoji JSON list.")
+
+(defvar ntfy--emoji-hashmap-cache nil
+  "Cache of mapping emoji aliases to Unicode characters.")
 
 ;;;###autoload
 (defun ntfy-message (message)
@@ -103,35 +112,52 @@ and update the variable that holds them."
 
 
 ;;;--- Internal Functions
+(defun ntfy--get-emoji-json (&optional force-refresh)
+  "Return the parsed ntfy emoji JSON structure, a vector of plists.
+
+Pass FORCE-REFRESH as t to bypass the cache."
+  (or (and (not force-refresh)
+           ntfy--emoji-json-cache)
+      (let ((url-buf (url-retrieve-synchronously ntfy--emoji-json-url)))
+        (when url-buf
+          (with-current-buffer url-buf
+            (goto-char (point-min))
+            (when (re-search-forward "\r?\n\r?\n" nil t)
+              (setq ntfy--emoji-json-cache (json-parse-buffer
+                                            :object-type 'plist))))
+          (kill-buffer url-buf))))
+  ntfy--emoji-json-cache)
+
+(defun ntfy--create-emoji-hashmap ()
+  "Create and cache a hashmap mapping emoji characters to its first alias."
+  (setq ntfy--emoji-hashmap-cache (make-hash-table :test #'equal))
+  (mapcar (lambda (elt)
+            (puthash (plist-get elt :emoji)
+                     (plist-get elt :aliases)
+                     ntfy--emoji-hashmap-cache))
+          (ntfy--get-emoji-json)))
+
 (defun ntfy--interactive-emoji-selector ()
   "Interactively select multiple emojis and return them as a vector of
 comma-separated tags."
   (interactive)
-  (let* ((emoji-file (expand-file-name "emoji-list"))
-         (emoji-list (if (file-exists-p emoji-file)
-                         (with-temp-buffer
-                           (insert-file-contents emoji-file)
-                           (read (current-buffer)))
-                       (error "Emoji list file not found at: %s" emoji-file)))
-
-         (emojis-selected ())
-         (selection nil))
-    ;; This will continue until a blank selection is done or M-Ret is pressed.
-    (while (not (string-empty-p selection))
-      (setq selection (completing-read "Select an emoji (M-Ret to exit): " emoji-list))
-      (unless (string-empty-p selection)
-        (let* ((selected-pair (cl-find selection emoji-list
-                                       :key 'car
-                                       :test 'string-equal))
-               (emoji-tag (cdr selected-pair)))
-          (setq emojis-selected(append emojis-selected (list emoji-tag))))))
-    ;; Return
-    emojis-selected))
-
+  ;; Create the hash if it not already created. This is cached.
+  (unless ntfy--emoji-hashmap-cache
+    (ntfy--create-emoji-hashmap))
+  (let ((continue t)
+        (emojis-selected nil))
+    (while continue
+      (push (elt (gethash (car (emoji--read-emoji))
+                          ntfy--emoji-hashmap-cache)
+                 0)
+            emojis-selected)
+      (setq continue (y-or-n-p "Add more Emojis?"))) ;; n -> nil quits loop
+    (reverse emojis-selected)))
 
 (defun ntfy--attach (attachment)
   "Check the options for the :attach property, and check if it is a local
 or remote file.
+
 NOTE: Currently, local files are not accepted as part of a limitation of
 ’publish as json’"
   (let* ((type (url-type (url-generic-parse-url attachment))))
